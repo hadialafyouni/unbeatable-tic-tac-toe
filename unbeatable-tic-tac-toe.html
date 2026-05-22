@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+  <title>Unbeatable Tic Tac Toe | RGB AI</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+    }
+
+    body {
+      min-height: 100vh;
+      background: linear-gradient(135deg, #0b0f1c 0%, #010101 100%);
+      font-family: 'Inter', 'Segoe UI', system-ui, -apple-system, sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    /* animated rgb background for whole container accent */
+    @keyframes rgbPulse {
+      0% { border-color: #ff3366; box-shadow: 0 0 8px #ff3366; }
+      33% { border-color: #33ff66; box-shadow: 0 0 8px #33ff66; }
+      66% { border-color: #3366ff; box-shadow: 0 0 8px #3366ff; }
+      100% { border-color: #ff3366; box-shadow: 0 0 8px #ff3366; }
+    }
+
+    /* intro screen */
+    .intro {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #02050e;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      transition: opacity 0.5s ease;
+      opacity: 1;
+    }
+
+    .intro-card {
+      background: rgba(12, 20, 35, 0.8);
+      backdrop-filter: blur(16px);
+      border-radius: 56px;
+      padding: 2.5rem 2rem;
+      text-align: center;
+      width: 90%;
+      max-width: 560px;
+      animation: rgbPulse 3s infinite;
+      border-width: 2px;
+      border-style: solid;
+    }
+
+    .intro-title {
+      font-size: 2.8rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #ff3366, #33ff66, #3366ff, #ff33cc);
+      background-size: 300% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: rgbTextShift 4s linear infinite;
+      margin-bottom: 0.5rem;
+    }
+
+    @keyframes rgbTextShift {
+      0% { background-position: 0% center; }
+      100% { background-position: 200% center; }
+    }
+
+    .madeby {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: #ffdd99;
+      margin: 8px 0;
+    }
+
+    .intro-desc {
+      color: #ccddff;
+      font-size: 0.95rem;
+      margin: 20px 0;
+    }
+
+    .play-btn {
+      background: #1f2a3a;
+      border: 2px solid;
+      border-image: linear-gradient(45deg, #ff3366, #33ff66) 1;
+      color: white;
+      font-size: 1.5rem;
+      font-weight: 600;
+      padding: 10px 32px;
+      border-radius: 60px;
+      cursor: pointer;
+      width: 70%;
+      transition: 0.08s linear;
+      animation: rgbPulse 2s infinite;
+    }
+
+    .play-btn:active {
+      transform: scale(0.96);
+    }
+
+    /* main game container rgb style */
+    .game-wrapper {
+      max-width: 620px;
+      width: 100%;
+      background: rgba(5, 10, 22, 0.75);
+      backdrop-filter: blur(4px);
+      border-radius: 56px;
+      padding: 1.8rem;
+      border: 2px solid;
+      animation: rgbPulse 3s infinite;
+      transition: all 0.2s;
+      opacity: 0;
+      transform: scale(0.96);
+    }
+
+    .game-wrapper.active {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    .game-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      flex-wrap: wrap;
+      margin-bottom: 24px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .game-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      background: linear-gradient(90deg, #ff6699, #66ff99, #6699ff);
+      background-clip: text;
+      -webkit-background-clip: text;
+      color: transparent;
+    }
+
+    .status-area {
+      background: #07131fcc;
+      border-radius: 60px;
+      padding: 6px 20px;
+      font-weight: 600;
+      color: #f0f0ff;
+      border: 1px solid #ff66aa;
+      font-size: 0.9rem;
+    }
+
+    .board {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      background: #030b15b3;
+      padding: 1.5rem;
+      border-radius: 48px;
+      margin: 16px 0;
+    }
+
+    .cell {
+      aspect-ratio: 1;
+      background: #0f1a28;
+      border-radius: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 4rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: 0.06s linear;
+      box-shadow: 0 6px 12px rgba(0,0,0,0.4);
+      color: #fff;
+    }
+
+    .cell:active {
+      transform: scale(0.96);
+    }
+
+    .cell.X {
+      color: #ff6699;
+      text-shadow: 0 0 12px #ff3366;
+    }
+    .cell.O {
+      color: #66ff99;
+      text-shadow: 0 0 12px #33ff66;
+    }
+
+    .reset-btn {
+      background: #13232f;
+      border: 1px solid #ff7799;
+      color: white;
+      font-size: 1.1rem;
+      padding: 10px 20px;
+      border-radius: 60px;
+      width: 100%;
+      font-weight: 600;
+      cursor: pointer;
+      margin-top: 6px;
+    }
+
+    .reset-btn:active {
+      transform: scale(0.97);
+    }
+
+    /* explanation block with animated colors */
+    .explanation {
+      margin-top: 22px;
+      background: #030c18aa;
+      border-radius: 32px;
+      padding: 14px 20px;
+      text-align: left;
+      line-height: 1.45;
+      border-left: 4px solid;
+      animation: borderRainbow 4s infinite;
+    }
+
+    @keyframes borderRainbow {
+      0% { border-left-color: #ff3366; }
+      33% { border-left-color: #33ff66; }
+      66% { border-left-color: #3366ff; }
+      100% { border-left-color: #ff3366; }
+    }
+
+    .animated-title {
+      font-size: 1.1rem;
+      font-weight: bold;
+      margin-bottom: 6px;
+      background: linear-gradient(90deg, #ff6699, #66ffcc, #ffcc66);
+      background-size: 200% auto;
+      -webkit-background-clip: text;
+      background-clip: text;
+      color: transparent;
+      animation: rgbTextShift 3s linear infinite;
+      display: inline-block;
+    }
+
+    .color-cycle-text {
+      font-size: 0.85rem;
+      color: #bbddff;
+      animation: colorChange 3s infinite;
+      margin-top: 5px;
+    }
+
+    @keyframes colorChange {
+      0% { color: #ff9999; text-shadow: 0 0 2px #ff3366; }
+      33% { color: #99ff99; text-shadow: 0 0 2px #33ff66; }
+      66% { color: #99ccff; text-shadow: 0 0 2px #3366ff; }
+      100% { color: #ff9999; text-shadow: 0 0 2px #ff3366; }
+    }
+
+    .vs-line {
+      font-size: 0.75rem;
+      text-align: center;
+      margin: 12px 0 4px;
+      color: #ffccaa;
+      font-weight: 500;
+      letter-spacing: 1px;
+      background: #00000055;
+      display: inline-block;
+      width: 100%;
+      border-radius: 30px;
+      padding: 5px;
+    }
+
+    footer {
+      font-size: 0.7rem;
+      text-align: center;
+      margin-top: 16px;
+      color: #8aadcc;
+    }
+
+    @media (max-width: 500px) {
+      .board { gap: 10px; padding: 1rem; }
+      .cell { font-size: 2.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- INTRO -->
+<div id="introScreen" class="intro">
+  <div class="intro-card">
+    <div class="intro-title">UNBEATABLE<br>TIC TAC TOE</div>
+    <div class="madeby">created by Hadi Afyouni</div>
+    <div class="intro-desc">
+      minimax algorithm • perfect decision tree<br>
+      the AI simulates every future move
+    </div>
+    <button class="play-btn" id="startGameBtn">ENTER THE GRID</button>
+  </div>
+</div>
+
+<!-- MAIN GAME -->
+<div id="gameWrapper" class="game-wrapper">
+  <div class="game-header">
+    <div class="game-title">RGB TACTICS • UNBEATABLE</div>
+    <div class="status-area" id="gameStatus">starting...</div>
+  </div>
+
+  <div class="board" id="board"></div>
+
+  <button class="reset-btn" id="resetGameBtn">NEW GAME</button>
+
+  <!-- ANIMATED EXPLANATION SECTION -->
+  <div class="explanation">
+    <div class="animated-title">❖ why the AI never loses ❖</div>
+    <div class="color-cycle-text" id="colorCyclePara">
+      This AI uses the Minimax algorithm — a recursive decision rule that evaluates every possible board state until the end of the game. It assumes you also play optimally and always chooses the move that guarantees at least a draw. Against perfect minimax, victory is impossible. Your best outcome is a tie. Every move is calculated in real time.
+    </div>
+  </div>
+
+  <div class="vs-line">human vs the perfect machine — starting player is randomized</div>
+  <footer>minimax intelligence • no luck, only logic</footer>
+</div>
+
+<script>
+  // ---------- MINIMAX AI (flawless) ----------
+  let board = Array(9).fill(null);
+  let gameActive = true;
+  let currentTurn = null;   // 'X' human, 'O' AI
+  let boardDiv = document.getElementById('board');
+  let statusDiv = document.getElementById('gameStatus');
+
+  const winPatterns = [
+    [0,1,2], [3,4,5], [6,7,8],
+    [0,3,6], [1,4,7], [2,5,8],
+    [0,4,8], [2,4,6]
+  ];
+
+  function checkWinner(boardArr, player) {
+    return winPatterns.some(pattern => pattern.every(idx => boardArr[idx] === player));
+  }
+
+  function isBoardFull(boardArr) {
+    return boardArr.every(cell => cell !== null);
+  }
+
+  function evaluate(boardArr) {
+    if (checkWinner(boardArr, 'O')) return 10;
+    if (checkWinner(boardArr, 'X')) return -10;
+    return 0;
+  }
+
+  function minimax(boardArr, depth, isMaximizing, alpha, beta) {
+    let score = evaluate(boardArr);
+    if (score === 10) return score - depth;
+    if (score === -10) return score + depth;
+    if (isBoardFull(boardArr)) return 0;
+
+    if (isMaximizing) {
+      let best = -Infinity;
+      for (let i = 0; i < 9; i++) {
+        if (boardArr[i] === null) {
+          boardArr[i] = 'O';
+          let val = minimax(boardArr, depth+1, false, alpha, beta);
+          boardArr[i] = null;
+          best = Math.max(best, val);
+          alpha = Math.max(alpha, best);
+          if (beta <= alpha) break;
+        }
+      }
+      return best;
+    } else {
+      let best = Infinity;
+      for (let i = 0; i < 9; i++) {
+        if (boardArr[i] === null) {
+          boardArr[i] = 'X';
+          let val = minimax(boardArr, depth+1, true, alpha, beta);
+          boardArr[i] = null;
+          best = Math.min(best, val);
+          beta = Math.min(beta, best);
+          if (beta <= alpha) break;
+        }
+      }
+      return best;
+    }
+  }
+
+  function aiMove() {
+    if (!gameActive) return;
+    if (currentTurn !== 'O') return;
+    if (isBoardFull(board) || checkWinner(board, 'X') || checkWinner(board, 'O')) return;
+
+    let bestScore = -Infinity;
+    let bestMove = -1;
+    for (let i = 0; i < 9; i++) {
+      if (board[i] === null) {
+        board[i] = 'O';
+        let moveVal = minimax(board, 0, false, -Infinity, Infinity);
+        board[i] = null;
+        if (moveVal > bestScore) {
+          bestScore = moveVal;
+          bestMove = i;
+        }
+      }
+    }
+
+    if (bestMove !== -1) {
+      board[bestMove] = 'O';
+      updateBoardUI();
+
+      if (checkWinner(board, 'O')) {
+        statusDiv.innerText = 'AI WINS (perfect play)';
+        gameActive = false;
+        return;
+      } else if (isBoardFull(board)) {
+        statusDiv.innerText = 'DRAW — optimal defense';
+        gameActive = false;
+        return;
+      }
+      currentTurn = 'X';
+      statusDiv.innerText = 'Your turn (X)';
+    }
+  }
+
+  function handleCellClick(idx) {
+    if (!gameActive) return;
+    if (currentTurn !== 'X') return;
+    if (board[idx] !== null) return;
+
+    board[idx] = 'X';
+    updateBoardUI();
+
+    if (checkWinner(board, 'X')) {
+      statusDiv.innerText = 'YOU WIN! (rare brilliance)';
+      gameActive = false;
+      return;
+    } else if (isBoardFull(board)) {
+      statusDiv.innerText = 'DRAW — stalemate';
+      gameActive = false;
+      return;
+    }
+
+    currentTurn = 'O';
+    statusDiv.innerText = 'AI computing ...';
+    setTimeout(() => {
+      if (gameActive && currentTurn === 'O') {
+        aiMove();
+        if (checkWinner(board, 'O')) {
+          statusDiv.innerText = 'AI WINS';
+          gameActive = false;
+        } else if (isBoardFull(board)) {
+          statusDiv.innerText = 'DRAW';
+          gameActive = false;
+        } else if (gameActive) {
+          statusDiv.innerText = 'Your turn (X)';
+        }
+        updateBoardUI();
+      }
+    }, 40);
+  }
+
+  function updateBoardUI() {
+    const cells = document.querySelectorAll('.cell');
+    for (let i = 0; i < cells.length; i++) {
+      const val = board[i];
+      cells[i].innerText = val || '';
+      if (val === 'X') {
+        cells[i].classList.add('X');
+        cells[i].classList.remove('O');
+      } else if (val === 'O') {
+        cells[i].classList.add('O');
+        cells[i].classList.remove('X');
+      } else {
+        cells[i].classList.remove('X', 'O');
+      }
+    }
+  }
+
+  // random first player (true = AI first)
+  function resetGameRandom() {
+    board = Array(9).fill(null);
+    gameActive = true;
+    const aiFirst = Math.random() < 0.5;
+    if (aiFirst) {
+      currentTurn = 'O';
+      statusDiv.innerText = 'AI moves first (O)';
+      updateBoardUI();
+      setTimeout(() => {
+        if (gameActive && currentTurn === 'O') {
+          aiMove();
+          if (!gameActive) return;
+          if (currentTurn === 'X') statusDiv.innerText = 'Your turn (X)';
+          updateBoardUI();
+        }
+      }, 50);
+    } else {
+      currentTurn = 'X';
+      statusDiv.innerText = 'Your turn (X)';
+      updateBoardUI();
+    }
+  }
+
+  function buildBoard() {
+    boardDiv.innerHTML = '';
+    for (let i = 0; i < 9; i++) {
+      const cell = document.createElement('div');
+      cell.classList.add('cell');
+      cell.addEventListener('click', (function(idx) {
+        return () => handleCellClick(idx);
+      })(i));
+      boardDiv.appendChild(cell);
+    }
+    updateBoardUI();
+  }
+
+  function fullReset() {
+    resetGameRandom();
+  }
+
+  // intro + start
+  const introDiv = document.getElementById('introScreen');
+  const gameWrap = document.getElementById('gameWrapper');
+  const startBtn = document.getElementById('startGameBtn');
+
+  startBtn.addEventListener('click', () => {
+    introDiv.style.opacity = '0';
+    setTimeout(() => {
+      introDiv.style.display = 'none';
+      gameWrap.classList.add('active');
+      buildBoard();
+      resetGameRandom();
+    }, 450);
+  });
+
+  document.getElementById('resetGameBtn').addEventListener('click', () => {
+    fullReset();
+  });
+
+  buildBoard();
+  gameWrap.classList.remove('active');
+</script>
+</body>
+</html>

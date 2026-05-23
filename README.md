@@ -18,5 +18,7 @@ Recursive tree traversal and backpropagation
 State space search and zero-sum game theory
 How game theory translates directly into code
 
+play here: https://hadialafyouni.github.io/unbeatable-tic-tac-toe/
+
 Built with
 HTML · CSS · JavaScript
